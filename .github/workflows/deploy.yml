@@ -1,0 +1,46 @@
+name: Deploy Flutter Web to GiHub Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-letest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: install Dep
+        run: flutter pub get
+
+      - name: build
+        run: flutter build web --release --bease-href "/${{ github.event.repository.name }}/"
+
+      - name: Setup Git pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload build files
+        uses: action/upload-pages-artifact@v4
+        with:
+          path: build/web
+
+      - name: Deploy
+        uses: actions/deply-page@v4
